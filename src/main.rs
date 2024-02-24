@@ -50,6 +50,7 @@ fn play_app(
     // ここにゲームのロジックを書く
     // タイトル項目の座標
     let mut title_menu: [(i32, i32); 3] = [(0, 0); 3];
+
     title_menu[0].0 = center_x;
     title_menu[0].1 = center_y + 20;
 
@@ -93,21 +94,35 @@ fn play_app(
     } else {
         // 項目を変更
         std::thread::sleep(Duration::from_secs(1));
+        
+        // あるばむに変更
         enigo.mouse_move_to(title_menu[1].0, title_menu[1].1);
         // マウス左を押す
         //std::thread::sleep(Duration::from_secs(2));
         //enigo.mouse_down(MouseButton::Left);
         //std::thread::sleep(Duration::from_secs(1));
         //enigo.mouse_up(MouseButton::Left);
-        press_button(&mut *enigo, IrisuButton::Decision, 2, 1)?;
-        press_button(&mut *enigo, IrisuButton::Return, 2, 1)?;
+        press_button(&mut *enigo, IrisuButton::Decision, 3, 1)?;
+        press_button(&mut *enigo, IrisuButton::Return, 3, 1)?;
 
+        // すこあに変更
+        enigo.mouse_move_to(title_menu[2].0, title_menu[2].1);
+        press_button(&mut *enigo, IrisuButton::Decision, 3, 1)?;
+        press_button(&mut *enigo, IrisuButton::Return, 3, 1)?;
+        // すたーとに変更
         enigo.mouse_move_to(title_menu[0].0, title_menu[0].1);
-        press_button(&mut *enigo, IrisuButton::Decision, 2, 1)?;
+        press_button(&mut *enigo, IrisuButton::Decision, 3, 1)?;
+        let mut i = 0;
 
-        press_button(&mut *enigo, IrisuButton::Decision, 2, 1)?;
-        press_button(&mut *enigo, IrisuButton::Decision, 2, 1)?;
-        press_button(&mut *enigo, IrisuButton::Decision, 2, 1)?;
+        // 発射
+        loop{
+            println!("i:{}",i);
+            press_button(&mut *enigo, IrisuButton::Decision, 1, 1)?;
+            i+=1;
+            if i >3{
+                break;
+            }
+        }
     }
     Ok(())
 }
