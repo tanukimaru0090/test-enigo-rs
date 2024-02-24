@@ -119,10 +119,12 @@ fn play_app(
             println!("i:{}",i);
             press_button(&mut *enigo, IrisuButton::Decision, 1, 1)?;
             i+=1;
-            if i >3{
+            if i >2{
                 break;
             }
         }
+            press_button(&mut *enigo, IrisuButton::End, 1, 1)?;
+            press_button(&mut *enigo, IrisuButton::End, 1, 1)?;
     }
     Ok(())
 }
