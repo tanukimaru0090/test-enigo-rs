@@ -1,11 +1,12 @@
 use enigo::{Enigo, Key, KeyboardControllable, MouseButton, MouseControllable};
+use log::{error, info, warn, LevelFilter};
+use simple_logger::SimpleLogger;
 use std::ffi::CString;
 use std::os::raw::c_void;
 use std::thread;
 use std::time::Duration;
 use winapi::shared::windef::{HWND, RECT};
 use winapi::um::winuser::{FindWindowA, GetForegroundWindow, GetWindowRect};
-
 enum IrisuButton {
     Decision, //決定ボタン
     Return,   //戻るボタン
@@ -62,7 +63,7 @@ fn play_app(
     let mut title_menu_on = false;
 
     // タイトル画面項目のシミュレーションテスト
-    /*
+    
     // 項目1
     std::thread::sleep(Duration::from_secs(1));
     enigo.mouse_move_to(title_menu[0].0,title_menu[0].1);
@@ -84,7 +85,6 @@ fn play_app(
     std::thread::sleep(Duration::from_secs(1));
     enigo.mouse_move_to(title_menu[0].0,title_menu[0].1);
 
-    */
 
     // ウィンドウハンドルが無効になったかどうかチェックする
     let hwnd = unsafe { GetForegroundWindow() };
@@ -94,7 +94,7 @@ fn play_app(
     } else {
         // 項目を変更
         std::thread::sleep(Duration::from_secs(1));
-        
+
         // あるばむに変更
         enigo.mouse_move_to(title_menu[1].0, title_menu[1].1);
         // マウス左を押す
@@ -115,16 +115,16 @@ fn play_app(
         let mut i = 0;
 
         // 発射
-        loop{
-            println!("i:{}",i);
+        loop {
+            info!("i:{}", i);
             press_button(&mut *enigo, IrisuButton::Decision, 1, 1)?;
-            i+=1;
-            if i >2{
+            i += 1;
+            if i > 50 {
                 break;
             }
         }
-            press_button(&mut *enigo, IrisuButton::End, 1, 1)?;
-            press_button(&mut *enigo, IrisuButton::End, 1, 1)?;
+        press_button(&mut *enigo, IrisuButton::End, 1, 1)?;
+        press_button(&mut *enigo, IrisuButton::End, 1, 1)?;
     }
     Ok(())
 }
@@ -158,8 +158,9 @@ fn init_app(
     *height = rect.bottom - rect.top;
     *center_x = rect.left + *width / 2;
     *center_y = rect.top + *height / 2;
+
     // 結果を表示する
-    println!(
+    info!(
         "init width:{} height:{} center x:{} y:{}",
         width, height, center_x, center_y
     );
@@ -172,6 +173,10 @@ fn init_app(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    SimpleLogger::new()
+        .with_level(LevelFilter::Info)
+        .init()
+        .unwrap();
     let (mut width, mut height, mut center_x, mut center_y) = (0, 0, 0, 0);
     let client_window_title = CString::new("irisu syndrome").unwrap();
     // ウィンドウハンドルを取得する
