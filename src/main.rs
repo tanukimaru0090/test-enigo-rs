@@ -57,10 +57,11 @@ fn play_app(
     //let mut title_menu_on = false;
 
     // タイトル項目の座標
-    let title_menu: [(i32, i32); 3] = [
+    let title_menu: [(i32, i32); 4] = [
         (center_x, center_y + 20),
         (center_x + 100, center_y + 100),
         (center_x + 150, center_y + 150),
+        (center_x, center_y - 150),
     ];
 
     let album_menu: [(i32, i32); 5] = [
@@ -84,8 +85,17 @@ fn play_app(
                 warn!("シミュレーション中にウィンドウハンドルが無効になりました。プログラムを終了します。");
                 return Err(String::from(""));
             } else {
+                // 最初にBGMを二回変える
+                std::thread::sleep(Duration::from_secs(2));
+                enigo.mouse_move_to(title_menu[3].0, title_menu[3].1);
+                press_button(&mut *enigo, IrisuButton::LClick, 3, 1)?;
+                press_button(&mut *enigo, IrisuButton::LClick, 3, 1)?;
+                /*
                 // タイトル画面項目のシミュレーションテスト
                 for (i, title) in title_menu.iter().enumerate() {
+                    if i >2{
+                        break;
+                    }
                     // ウィンドウハンドルを取得する
                     hwnd =
                         unsafe { FindWindowA(std::ptr::null_mut(), client_window_title.as_ptr()) };
@@ -98,6 +108,9 @@ fn play_app(
                     std::thread::sleep(Duration::from_secs(2));
                     enigo.mouse_move_to(title.0, title.1);
                 }
+
+
+
                 std::thread::sleep(Duration::from_secs(2));
                 // あるばむにカーソルを合わせる
                 enigo.mouse_move_to(title_menu[1].0, title_menu[1].1);
@@ -119,39 +132,47 @@ fn play_app(
                     }
                     std::thread::sleep(Duration::from_secs(2));
                     enigo.mouse_move_to(album.0, album.1);
-                    press_button(&mut *enigo, IrisuButton::LClick, 3, 30)?;
+                    press_button(&mut *enigo, IrisuButton::LClick, 3, 15)?;
                     press_button(&mut *enigo, IrisuButton::RClick, 3, 3)?;
                 }
 
                 press_button(&mut *enigo, IrisuButton::RClick, 3, 3)?;
-
-                /*
-                    // すたーとに変更
-                    std::thread::sleep(Duration::from_secs(2));
-                    enigo.mouse_move_to(title_menu[0].0, title_menu[0].1);
-                    press_button(&mut *enigo, IrisuButton::RClick, 3, 1)?;
-                    let mut i = 0;
-
-                    // 発射
-                    loop {
-                        hwnd =
-                            unsafe { FindWindowA(std::ptr::null_mut(), client_window_title.as_ptr()) };
-
-                        // ウィンドウハンドルがNULLならエラーを返して終了する
-                        if hwnd.is_null() {
-                            warn!("シミュレーション中にウィンドウハンドルが無効になりました。プログラムを終了します。");
-
-                            return Err(String::from(""));
-                        }
-
-                        info!("i:{}", i);
-                        press_button(&mut *enigo, IrisuButton::LClick, 1, 1)?;
-                        i += 1;
-                        if i > 50 {
-                            break;
-                        }
-                    }
                 */
+                // すたーとに変更
+                std::thread::sleep(Duration::from_secs(2));
+                enigo.mouse_move_to(title_menu[0].0, title_menu[0].1);
+                press_button(&mut *enigo, IrisuButton::RClick, 3, 1)?;
+                let mut i = 0;
+
+                // 発射
+                loop {
+                    hwnd =
+                        unsafe { FindWindowA(std::ptr::null_mut(), client_window_title.as_ptr()) };
+
+                    // ウィンドウハンドルがNULLならエラーを返して終了する
+                    if hwnd.is_null() {
+                        warn!("シミュレーション中にウィンドウハンドルが無効になりました。プログラムを終了します。");
+                        return Err(String::from(""));
+                    }
+
+                    let (mut x, mut y) = enigo.mouse_location();
+                    info!("mouse x:{} y:{}", x, y);
+                    info!("i:{}", i);
+
+                    if x < 650 && y < 513 && !(x < 0) && !(y<0) {
+                        std::thread::sleep(Duration::from_secs(2));
+                        enigo.mouse_move_to(x + i * 4, y+i*4);
+                    }else if x > 650&& y > 513{
+                        x = center_x;
+                        y = center_y;
+                    }
+                    press_button(&mut *enigo, IrisuButton::LClick, 1, 1)?;
+                    i += 1;
+
+                    if i > 50 {
+                        break;
+                    }
+                }
             }
         }
     }
