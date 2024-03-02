@@ -7,10 +7,11 @@ use std::thread;
 use std::time::Duration;
 use winapi::shared::windef::{HWND, RECT};
 use winapi::um::winuser::{FindWindowA, GetForegroundWindow, GetWindowRect};
+
 enum IrisuButton {
-    Decision, //決定ボタン
-    Return,   //戻るボタン
-    End,      //終了ボタン
+    LClick, //決定ボタン
+    RClick, //戻るボタン
+    Esc,    //終了ボタン
 }
 
 fn press_button(
@@ -21,18 +22,21 @@ fn press_button(
 ) -> Result<(), String> {
     std::thread::sleep(Duration::from_secs(start_sleep_time));
     match button_type {
-        IrisuButton::Decision => {
+        IrisuButton::LClick => {
+            info!("press button:LClick");
             enigo.mouse_down(MouseButton::Left);
             std::thread::sleep(Duration::from_secs(down_sleep_time));
             enigo.mouse_up(MouseButton::Left);
         }
-        IrisuButton::End => {
+        IrisuButton::Esc => {
+            info!("press button:Esc");
             enigo.key_down(Key::Escape);
             std::thread::sleep(Duration::from_secs(down_sleep_time));
             enigo.key_up(Key::Escape);
         }
 
-        IrisuButton::Return => {
+        IrisuButton::RClick => {
+            info!("press button:RClick");
             enigo.mouse_down(MouseButton::Right);
             std::thread::sleep(Duration::from_secs(down_sleep_time));
             enigo.mouse_up(MouseButton::Right);
@@ -49,86 +53,111 @@ fn play_app(
     center_y: i32,
 ) -> Result<(), String> {
     // ここにゲームのロジックを書く
+
+    //let mut title_menu_on = false;
+
     // タイトル項目の座標
-    let mut title_menu: [(i32, i32); 3] = [(0, 0); 3];
+    let title_menu: [(i32, i32); 3] = [
+        (center_x, center_y + 20),
+        (center_x + 100, center_y + 100),
+        (center_x + 150, center_y + 150),
+    ];
 
-    title_menu[0].0 = center_x;
-    title_menu[0].1 = center_y + 20;
-
-    title_menu[1].0 = center_x + 100;
-    title_menu[1].1 = center_y + 100;
-
-    title_menu[2].0 = center_x + 150;
-    title_menu[2].1 = center_y + 150;
-    let mut title_menu_on = false;
-
-    // タイトル画面項目のシミュレーションテスト
-    
-    // 項目1
-    std::thread::sleep(Duration::from_secs(1));
-    enigo.mouse_move_to(title_menu[0].0,title_menu[0].1);
-    // 項目2
-    std::thread::sleep(Duration::from_secs(1));
-    enigo.mouse_move_to(title_menu[1].0,title_menu[1].1);
-    // 項目3
-    std::thread::sleep(Duration::from_secs(1));
-    enigo.mouse_move_to(title_menu[2].0,title_menu[2].1);
-
-
-    // 項目3
-    std::thread::sleep(Duration::from_secs(1));
-    enigo.mouse_move_to(title_menu[2].0,title_menu[2].1);
-    // 項目2
-    std::thread::sleep(Duration::from_secs(1));
-    enigo.mouse_move_to(title_menu[1].0,title_menu[1].1);
-    // 項目1
-    std::thread::sleep(Duration::from_secs(1));
-    enigo.mouse_move_to(title_menu[0].0,title_menu[0].1);
-
+    let album_menu: [(i32, i32); 5] = [
+        (center_x - 250, center_y + 200),
+        ((center_x - 250) + 150, center_y + 200),
+        ((center_x - 250) + 250, center_y + 200),
+        ((center_x - 250) + 350, center_y + 200),
+        ((center_x - 250) + 450, center_y + 200),
+    ];
 
     // ウィンドウハンドルが無効になったかどうかチェックする
-    let hwnd = unsafe { GetForegroundWindow() };
-    if hwnd.is_null() {
-        // ウィンドウハンドルがNULLならエラーを返して終了する
-        return Err("ウィンドウハンドルが無効になりました".to_string());
-    } else {
-        // 項目を変更
-        std::thread::sleep(Duration::from_secs(1));
-
-        // あるばむに変更
-        enigo.mouse_move_to(title_menu[1].0, title_menu[1].1);
-        // マウス左を押す
-        //std::thread::sleep(Duration::from_secs(2));
-        //enigo.mouse_down(MouseButton::Left);
-        //std::thread::sleep(Duration::from_secs(1));
-        //enigo.mouse_up(MouseButton::Left);
-        press_button(&mut *enigo, IrisuButton::Decision, 3, 1)?;
-        press_button(&mut *enigo, IrisuButton::Return, 3, 1)?;
-
-        // すこあに変更
-        enigo.mouse_move_to(title_menu[2].0, title_menu[2].1);
-        press_button(&mut *enigo, IrisuButton::Decision, 3, 1)?;
-        press_button(&mut *enigo, IrisuButton::Return, 3, 1)?;
-        // すたーとに変更
-        enigo.mouse_move_to(title_menu[0].0, title_menu[0].1);
-        press_button(&mut *enigo, IrisuButton::Decision, 3, 1)?;
-        let mut i = 0;
-
-        // 発射
+    unsafe {
         loop {
-            info!("i:{}", i);
-            press_button(&mut *enigo, IrisuButton::Decision, 1, 1)?;
-            i += 1;
-            if i > 50 {
-                break;
+            let client_window_title = CString::new("irisu syndrome").unwrap();
+            // ウィンドウハンドルを取得する
+            let mut hwnd =
+                unsafe { FindWindowA(std::ptr::null_mut(), client_window_title.as_ptr()) };
+
+            // ウィンドウハンドルがNULLならエラーを返して終了する
+            if hwnd.is_null() {
+                warn!("シミュレーション中にウィンドウハンドルが無効になりました。プログラムを終了します。");
+                return Err(String::from(""));
+            } else {
+                // タイトル画面項目のシミュレーションテスト
+                for (i, title) in title_menu.iter().enumerate() {
+                    // ウィンドウハンドルを取得する
+                    hwnd =
+                        unsafe { FindWindowA(std::ptr::null_mut(), client_window_title.as_ptr()) };
+
+                    // ウィンドウハンドルがNULLならエラーを返して終了する
+                    if hwnd.is_null() {
+                        warn!("シミュレーション中にウィンドウハンドルが無効になりました。プログラムを終了します。");
+                        return Err(String::from(""));
+                    }
+                    std::thread::sleep(Duration::from_secs(2));
+                    enigo.mouse_move_to(title.0, title.1);
+                }
+                std::thread::sleep(Duration::from_secs(2));
+                // あるばむにカーソルを合わせる
+                enigo.mouse_move_to(title_menu[1].0, title_menu[1].1);
+
+                //あるばむに変更
+                press_button(&mut *enigo, IrisuButton::LClick, 3, 1)?;
+
+                // あるばむのメニュー1~5にカーソルを合わせる
+                for (i, album) in album_menu.iter().enumerate() {
+                    // ウィンドウハンドルを取得する
+                    hwnd =
+                        unsafe { FindWindowA(std::ptr::null_mut(), client_window_title.as_ptr()) };
+
+                    // ウィンドウハンドルがNULLならエラーを返して終了する
+                    if hwnd.is_null() {
+                        warn!("シミュレーション中にウィンドウハンドルが無効になりました。プログラムを終了します。");
+
+                        return Err(String::from(""));
+                    }
+                    std::thread::sleep(Duration::from_secs(2));
+                    enigo.mouse_move_to(album.0, album.1);
+                    press_button(&mut *enigo, IrisuButton::LClick, 3, 30)?;
+                    press_button(&mut *enigo, IrisuButton::RClick, 3, 3)?;
+                }
+
+                press_button(&mut *enigo, IrisuButton::RClick, 3, 3)?;
+
+                /*
+                    // すたーとに変更
+                    std::thread::sleep(Duration::from_secs(2));
+                    enigo.mouse_move_to(title_menu[0].0, title_menu[0].1);
+                    press_button(&mut *enigo, IrisuButton::RClick, 3, 1)?;
+                    let mut i = 0;
+
+                    // 発射
+                    loop {
+                        hwnd =
+                            unsafe { FindWindowA(std::ptr::null_mut(), client_window_title.as_ptr()) };
+
+                        // ウィンドウハンドルがNULLならエラーを返して終了する
+                        if hwnd.is_null() {
+                            warn!("シミュレーション中にウィンドウハンドルが無効になりました。プログラムを終了します。");
+
+                            return Err(String::from(""));
+                        }
+
+                        info!("i:{}", i);
+                        press_button(&mut *enigo, IrisuButton::LClick, 1, 1)?;
+                        i += 1;
+                        if i > 50 {
+                            break;
+                        }
+                    }
+                */
             }
         }
-        press_button(&mut *enigo, IrisuButton::End, 1, 1)?;
-        press_button(&mut *enigo, IrisuButton::End, 1, 1)?;
     }
+
     Ok(())
 }
-
 fn init_app(
     hwnd: HWND,
     enigo: &mut Enigo,
