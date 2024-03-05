@@ -4,6 +4,8 @@ use simple_logger::SimpleLogger;
 use std::ffi::CString;
 use std::os::raw::c_void;
 use std::thread;
+use std::env::args;
+use std::process::Command;
 use std::time::Duration;
 use winapi::shared::windef::{HWND, RECT};
 use winapi::um::winuser::{FindWindowA, GetForegroundWindow, GetWindowRect};
@@ -90,7 +92,7 @@ fn play_app(
                 enigo.mouse_move_to(title_menu[3].0, title_menu[3].1);
                 press_button(&mut *enigo, IrisuButton::LClick, 3, 1)?;
                 press_button(&mut *enigo, IrisuButton::LClick, 3, 1)?;
-                /*
+                
                 // タイトル画面項目のシミュレーションテスト
                 for (i, title) in title_menu.iter().enumerate() {
                     if i >2{
@@ -137,7 +139,7 @@ fn play_app(
                 }
 
                 press_button(&mut *enigo, IrisuButton::RClick, 3, 3)?;
-                */
+                
                 // すたーとに変更
                 std::thread::sleep(Duration::from_secs(2));
                 enigo.mouse_move_to(title_menu[0].0, title_menu[0].1);
@@ -223,10 +225,19 @@ fn init_app(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    //let mut args = args();
+    //let mut args:Vec<String> = args.skip(1).collect();
+    let default_program = "/Users/daruma/Downloads/irisu203/irisu203/irisu.exe";
+
     SimpleLogger::new()
         .with_level(LevelFilter::Info)
         .init()
         .unwrap();
+    //info!("{}",args[0]);
+    let  cmd = Command::new(default_program).spawn().unwrap();
+    
+    thread::sleep(Duration::from_secs(2));
+
     let (mut width, mut height, mut center_x, mut center_y) = (0, 0, 0, 0);
     let client_window_title = CString::new("irisu syndrome").unwrap();
     // ウィンドウハンドルを取得する
@@ -234,6 +245,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::thread::sleep(Duration::from_secs(2));
     // Enigoのインスタンスを作る
     let mut enigo = Enigo::new();
+
     // init_app関数を呼び出す
     init_app(
         hwnd,
