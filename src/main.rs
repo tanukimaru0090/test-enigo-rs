@@ -2,14 +2,13 @@ use enigo::{Enigo, Key, KeyboardControllable, MouseButton, MouseControllable};
 use log::{error, info, warn, LevelFilter};
 use simple_logger::SimpleLogger;
 use std::ffi::CString;
-use std::os::raw::c_void;
 use std::thread;
-use std::env::args;
 use std::process::Command;
 use std::time::Duration;
 use winapi::shared::windef::{HWND, RECT};
 use winapi::um::winuser::{FindWindowA, GetForegroundWindow, GetWindowRect};
 
+use std::env;
 enum IrisuButton {
     LClick, //決定ボタン
     RClick, //戻るボタン
@@ -225,28 +224,29 @@ fn init_app(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    //let mut args = args();
-    //let mut args:Vec<String> = args.skip(1).collect();
-    let default_program = "/Users/daruma/Downloads/irisu203/irisu203/irisu.exe";
-
     SimpleLogger::new()
         .with_level(LevelFilter::Info)
         .init()
         .unwrap();
-    //info!("{}",args[0]);
-    let  cmd = Command::new(default_program).spawn().unwrap();
-    
-    thread::sleep(Duration::from_secs(2));
+
+    let args: Vec<String> = env::args().skip(1).collect();
+    let default_program = "/Users/daruma/Downloads/irisu203/irisu203/irisu.exe";
+
+    let cmd = if cfg!(debug_assertions) {
+        Command::new(default_program)
+    } else {
+        Command::new(&args[0])
+    }.spawn().unwrap();
+
+    thread::sleep(Duration::from_secs(5));
 
     let (mut width, mut height, mut center_x, mut center_y) = (0, 0, 0, 0);
     let client_window_title = CString::new("irisu syndrome").unwrap();
-    // ウィンドウハンドルを取得する
     let mut hwnd = unsafe { FindWindowA(std::ptr::null_mut(), client_window_title.as_ptr()) };
-    std::thread::sleep(Duration::from_secs(2));
-    // Enigoのインスタンスを作る
+    thread::sleep(Duration::from_secs(2));
+
     let mut enigo = Enigo::new();
 
-    // init_app関数を呼び出す
     init_app(
         hwnd,
         &mut enigo,
@@ -255,7 +255,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &mut center_x,
         &mut center_y,
     )?;
-    // play_app関数を呼び出す
     play_app(&mut enigo, width, height, center_x, center_y)?;
+
     Ok(())
 }
